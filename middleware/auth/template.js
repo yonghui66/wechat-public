@@ -4,11 +4,11 @@
  * @returns {xml}
  */
 module.exports = options => {
-  let inner = '不好意思，暂时无法识别您的内容';
-  switch (options.MsgType) {
+  let inner = '<Content><![CDATA[不好意思，暂时无法识别您的内容]]></Content>';
+  switch (options.msgType) {
     // 回复文本消息
     case 'text':
-      inner = `<Content><![CDATA[你好]]></Content>`;
+      inner = `<Content><![CDATA[${options.content}]]></Content>`;
       break;
     // 回复图片消息
     case 'image':
@@ -53,12 +53,11 @@ module.exports = options => {
       </Articles>`;
       break;
   }
-
   return `<xml>
-  <ToUserName><![CDATA[${options.FromUserName}]]></ToUserName>
-  <FromUserName><![CDATA[${options.ToUserName}]]></FromUserName>
-  <CreateTime>${Date.now()}</CreateTime>
-  <MsgType><![CDATA[${options.MsgType}]]></MsgType>
+  <ToUserName><![CDATA[${options.fromUserName}]]></ToUserName>
+  <FromUserName><![CDATA[${options.toUserName}]]></FromUserName>
+  <CreateTime>${options.createTime}</CreateTime>
+  <MsgType><![CDATA[${options.msgType}]]></MsgType>
   ${inner}
   </xml>`;
 };

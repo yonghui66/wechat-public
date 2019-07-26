@@ -6,6 +6,7 @@ const {
   formatMessage
 } = require('../../utils/tool');
 const template = require('./template');
+const reply = require('./reply');
 
 // sha1 加密方式
 // 本地需要自己生成signature 跟微信服务器发过来的进行比对，只有相同才能使用
@@ -38,29 +39,10 @@ module.exports = async (req, res, next) => {
     const jsData = await parseXMLData(data);
     // 格式化
     const message = formatMessage(jsData);
-    // 自动回复消息
-    let content = '不好意思，暂时无法识别您的内容';
-    // 判断为文本消息
-    if (message.MsgType === 'text') {
-      if (message.Content === '1') content = '吃鸡咯！';
-      else if (message.Content === '2') content = '突突突突突突吃鸡咯！';
-      // 半匹配回复
-      else if (message.Content.match('爱')) content = '爱爱爱爱吃鸡咯！';
-    }
 
-    // tousername 发送给谁  跟接受的相反
-    // 标签里面不要有多余空格
-    const replyMessage = `<xml>
-    <ToUserName><![CDATA[${message.FromUserName}]]></ToUserName>
-    <FromUserName><![CDATA[${message.ToUserName}]]></FromUserName>
-    <CreateTime>${Date.now()}</CreateTime>
-    <MsgType><![CDATA[text]]></MsgType>
-    <Content><![CDATA[${content}]]></Content>
-    </xml>`;
+    const options = reply(message);
+    const replyMessage = template(options);
 
-    // const replyMessage = template(type)
-
-    console.log(replyMessage);
     // 如果没有响应，微信会发送三次
     res.send(replyMessage);
   } else res.end('error');
