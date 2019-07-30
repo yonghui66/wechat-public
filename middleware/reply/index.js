@@ -7,11 +7,14 @@ const {
 } = require('../../utils/tool');
 const template = require('./template');
 const reply = require('./reply');
+const db = require('../../db');
 
 // sha1 加密方式
 // 本地需要自己生成signature 跟微信服务器发过来的进行比对，只有相同才能使用
 
 module.exports = async (req, res, next) => {
+  await db;
+
   const { signature, echostr, timestamp, nonce } = req.query;
   const { token } = config;
 
@@ -40,7 +43,7 @@ module.exports = async (req, res, next) => {
     // 格式化
     const message = formatMessage(jsData);
 
-    const options = reply(message);
+    const options = await reply(message);
     const replyMessage = template(options);
 
     // 如果没有响应，微信会发送三次

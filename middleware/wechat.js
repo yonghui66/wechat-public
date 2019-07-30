@@ -145,7 +145,7 @@ class wechat_token {
         .then(res =>
           resolve({
             ticket: res.ticket,
-            ticket_expires_in: Date.now() + (res.expires_in - 300) * 1000
+            expires_in: Date.now() + (res.expires_in - 300) * 1000
           })
         )
         .catch(err => reject(`获取ticket失败 is error:${err}`));
@@ -155,13 +155,13 @@ class wechat_token {
   saveTicket(accessToken) {
     return new Promise((resolve, reject) =>
       fs.writeFile(
-        '../access_token.txt',
+        '../ticket.txt',
         JSON.stringify(accessToken),
         (err, data) => {
           if (!err) {
-            console.log('access_token 保存成功');
+            console.log('ticket 保存成功');
             resolve(data);
-          } else reject('access_token 保存失败：' + err);
+          } else reject('ticket 保存失败：' + err);
         }
       )
     );
@@ -169,7 +169,7 @@ class wechat_token {
 
   readTicket() {
     return new Promise((resolve, reject) =>
-      fs.readFile('../access_token.txt', (err, data) => {
+      fs.readFile('../ticket.txt', (err, data) => {
         if (!err) resolve(JSON.parse(data));
         else reject(err);
       })
@@ -184,7 +184,7 @@ class wechat_token {
     return data.ticket_expires_in > Date.now();
   }
 
-  fetchAccessToken() {
+  fetchTicket() {
     // 判断之前是否获取过并且没有过期
     if (this.ticket && this.ticket_expires_in && this.isValidTicket(this)) {
       return Promise.resolve({
@@ -215,10 +215,12 @@ class wechat_token {
   }
 }
 
-(async function() {
-  const w = new wechat_token();
-  let result = await w.deleteMenu();
-  console.log(result);
-  result = await w.createMenu(menu);
-  console.log(result);
-})();
+// (async function() {
+//   const w = new wechat_token();
+//   let result = await w.deleteMenu();
+//   console.log(result);
+//   result = await w.createMenu(menu);
+//   console.log(result);
+// })();
+
+module.exports = wechat_token;

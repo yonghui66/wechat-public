@@ -42,15 +42,19 @@ module.exports = options => {
       break;
     // 回复图文消息
     case 'news':
-      inner = `<ArticleCount>1</ArticleCount>
+      inner = `<ArticleCount>${options.content.length}</ArticleCount>
       <Articles>
-        <item>
-          <Title><![CDATA[title1]]></Title>
-          <Description><![CDATA[description1]]></Description>
-          <PicUrl><![CDATA[picurl]]></PicUrl>
-          <Url><![CDATA[url]]></Url>
-        </item>
+        ${options.content.map(
+          item => `<item>
+        <Title><![CDATA[${item.title}]]></Title>
+        <Description><![CDATA[${item.description}]]></Description>
+        <PicUrl><![CDATA[${item.picurl}]]></PicUrl>
+        <Url><![CDATA[${item.url}]]></Url>
+      </item>`
+        )}
       </Articles>`;
+
+      console.log(inner)
       break;
   }
   return `<xml>

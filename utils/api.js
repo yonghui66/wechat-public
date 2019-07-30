@@ -6,5 +6,6 @@ module.exports = {
   menu: {
     createMenu: `${url}menu/create`,
     deleteMenu: `${url}menu/delete`
-  }
+  },
+  qiniuUrl:'http://pvfy4w816.bkt.clouddn.com/'
 };

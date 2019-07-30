@@ -7,6 +7,71 @@
     <title>Document</title>
   </head>
   <body>
-    搜索页面
+    <h1 id="search">开始录音</h1>
+    <div id="share">分享</div>
   </body>
+  <script src="https://res.wx.qq.com/open/js/jweixin-1.4.0.js"></script>
+  <script src="https://cdn.bootcss.com/jquery/3.4.1/jquery.min.js"></script>
+  <script>
+    wx.config({
+      debug: true, // 开启调试模式,调用的所有api的返回值会在客户端alert出来，若要查看传入的参数，可以在pc端打开，参数信息会通过log打出，仅在pc端时才会打印。
+      appId: '<%= appID %>', // 必填，公众号的唯一标识
+      timestamp: '<%= timestamp %>', // 必填，生成签名的时间戳
+      nonceStr: '<%= noncestr %>', // 必填，生成签名的随机串
+      signature: '<%= signature %>', // 必填，签名
+      jsApiList: [
+        'onMenuShareQZone',
+        'startRecord',
+        'stopRecord',
+        'translateVoice'
+      ] // 必填，需要使用的JS接口列表
+    });
+    wx.ready(function() {
+      // config信息验证后会执行ready方法，所有接口调用都必须在config接口获得结果之后，config是一个客户端的异步操作，所以如果需要在页面加载时就调用相关接口，则须把相关接口放在ready函数中调用来确保正确执行。对于用户触发时才调用的接口，则可以直接调用，不需要放在ready函数中。
+      console.log('config信息验证后会执行ready方法');
+      let isStatus = 0;
+      $('#search').on('click', function() {
+        if (isStatus) {
+          wx.stopRecord({
+            success: function(res) {
+              // 微信会把录音上传到微信服务器，根据id进行标识
+              var localId = res.localId;
+              console.log(111);
+              wx.translateVoice({
+                localId, // 需要识别的音频的本地Id，由录音相关接口获得
+                isShowProgressTips: 1, // 默认为1，显示进度提示
+                success: function(res) {
+                  console.log(222);
+                  console.log(res.translateResult); // 语音识别的结果
+                }
+              });
+            },
+            fail: function(err) {
+              console.log(err);
+            }
+          });
+        } else {
+          wx.startRecord();
+          isStatus = 1;
+        }
+      });
+
+      $('#share').on('click', function() {
+        wx.onMenuShareQZone({
+          title: '2222', // 分享标题
+          desc: '312321321321', // 分享描述
+          link: 'www.baidu.com', // 分享链接
+          imgUrl: '', // 分享图标
+          success: function() {
+            alert('成功');
+            // 用户确认分享后执行的回调函数
+          },
+          cancel: function() {
+            alert('失败');
+            // 用户取消分享后执行的回调函数
+          }
+        });
+      });
+    });
+  </script>
 </html>
