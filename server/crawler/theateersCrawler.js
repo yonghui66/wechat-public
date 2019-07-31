@@ -4,8 +4,9 @@ const url = 'https://movie.douban.com/explore';
 
 module.exports = async () => {
   const browser = await puppeteer.launch({
-    // args:[],
-    headless: false // 无头浏览器的形式打开页面，true为没有页面在后台打开
+    headless: true,
+    slowMo: 300,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   });
   // 创建标签页
   const page = await browser.newPage();
@@ -19,9 +20,6 @@ module.exports = async () => {
   const result = await page.evaluate(() => {
     // 对加载好的页面进行操作
     const $list = $('.list-wp > .list > .item');
-    console.log($list)
-    console.log($list.length)
-
     const result = [];
 
     for (let index = 0; index < $list.length; index++) {

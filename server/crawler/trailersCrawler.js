@@ -4,7 +4,9 @@ const url = 'https://movie.douban.com/coming';
 
 module.exports = async () => {
   const browser = await puppeteer.launch({
-    headless: false // 无头浏览器的形式打开页面，true为没有页面在后台打开
+    args: ['--no-sandbox'],
+    ignoreDefaultArgs: ['--disable-extensions'],
+    headless: true // 无头浏览器的形式打开页面，true为没有页面在后台打开
   });
   // 创建标签页
   const page = await browser.newPage();
@@ -14,7 +16,7 @@ module.exports = async () => {
   });
   // 延时器，延时后再开始爬虫数据
   await timeout();
-
+  // 爬取列表
   const result = await page.evaluate(() => {
     // 对加载好的页面进行操作
     const $list = $('.coming_list tbody tr');
@@ -23,7 +25,7 @@ module.exports = async () => {
 
     for (let index = 0; index < $list.length; index++) {
       const element = $($list[index]).children('td');
-      const people = +element
+      const people = element
         .last()
         .html()
         .split('人')[0];
@@ -60,8 +62,7 @@ module.exports = async () => {
     // 返回数据
     return result;
   });
-  result.length = 1;
-
+  // 爬取详情
   for (let index = 0; index < result.length; index++) {
     const res = result[index];
 
@@ -71,34 +72,39 @@ module.exports = async () => {
     const itemResult = await page.evaluate(async () => {
       const title = $('[property="v:itemreviewed"]').html();
       const pd = $('[rel="v:directedBy"]').html();
+      const image = $('[rel="v:image"]').html();
       const starring = [];
       $('[rel="v:starring"]').map((index, el) => starring.push(el.innerHTML));
       const property = $('[property="v:initialReleaseDate"]').html();
       const related = $('.related-pic-video').attr('href');
       const related_image = $('.related-pic-video').attr('background-image');
+      const doubanid = $('.a_show_login.lnk-sharing').attr('share-id');
 
       return {
+        doubanid,
+        image,
         title,
         pd,
         starring,
         property,
         related,
-        related_image,
-        vedioUrl: vedioResult
+        related_image
       };
     });
-    await timeout();
-    await page.goto(itemResult.related, {
+
+    result[index] = { ...result[index], ...itemResult };
+  }
+  // 爬取预告片
+  for (let index = 0; index < result.length; index++) {
+    const data = result[index];
+    await page.goto(data.related, {
       waitUntil: 'networkidle2' // 等待网络空闲时，再跳转加载页面
     });
-    const vedioUrl = await page.evaluate(() => {
-      const is = $('video>source').attr('src') || '';
-      return is;
-    });
-
-    result[index] = { ...result[index], ...itemResult, vedioUrl: vedioUrl };
+    const vedio_url = await page.evaluate(
+      () => $('video>source').attr('src') || ''
+    );
+    result[index] = { ...result[index], vedio_url };
   }
-
   // 关闭浏览器
   await browser.close();
 

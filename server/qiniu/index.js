@@ -3,21 +3,31 @@ const Theaters = require('../../model/theaters');
 // 生成唯一key
 const nanoid = require('nanoid');
 
-module.exports = async () => {
+module.exports = async (key, Model) => {
   // postKey: { $or: [{postKey:''}, {postKey:null}, {postKey:{ $exists: false }}] }
 
-  const result = await Theaters.find({
-    postKey: { $in: ['', null] }
+  const result = await Model.find({
+    [key]: { $in: ['', null] }
   });
 
   for (let index = 0; index < result.length; index++) {
     const data = result[index];
-    const url = data.image;
-    const key = `${nanoid(10)}.jpg`;
 
-    await upload(url, key);
+    let url = data.image;
+    let lastKey = '.jpg';
 
-    data.postKey = key;
+    if (key === 'coverkey') {
+      url = data.related_image;
+    } else if (key === 'vedioKey') {
+      url = data.vedio_url;
+      lastKey = '.mp4';
+    }
+
+    lastKey = `${nanoid}${lastKey}`;
+
+    await upload(url, lastKey);
+
+    data[key] = lastKey;
 
     await data.save();
   }
